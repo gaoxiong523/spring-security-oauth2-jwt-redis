@@ -7,6 +7,7 @@ import org.springframework.data.redis.connection.RedisConfiguration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
@@ -36,21 +37,29 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory () {
-        return new LettuceConnectionFactory("106.12.84.126", 6379);
+        LettuceConnectionFactory factory = new LettuceConnectionFactory("106.12.84.126", 6379);
+        factory.afterPropertiesSet();
+        return factory;
     }
 
     @Override
     public void configure ( ClientDetailsServiceConfigurer clients ) throws Exception {
         clients.inMemory()
                 .withClient("myapp")
-                .secret("lxapp")
-                .resourceIds(SOURCE_ID)
-                .authorizedGrantTypes("password", "refresh_token")
-                .scopes("all").
-                authorities("ADMIN")
+                .secret(new BCryptPasswordEncoder().encode("lxapp"))
+                //不设置 resourceids 就是对所有resource都有访问权限
+//                .resourceIds(SOURCE_ID)
+                .authorizedGrantTypes("Authorization Code", "password", "refresh_token")
+                .scopes("all")
+                .accessTokenValiditySeconds(ACCESS_TOKEN_TIMER)
+                .refreshTokenValiditySeconds(REFRESH_TOKEN_TIMER)
+                .and()
+                .withClient("zuul-server")
+                .secret(new BCryptPasswordEncoder().encode("123456"))
+                .authorizedGrantTypes("Authorization Code", "password", "refresh_token")
+                .scopes("all")
                 .accessTokenValiditySeconds(ACCESS_TOKEN_TIMER)
                 .refreshTokenValiditySeconds(REFRESH_TOKEN_TIMER);
-
     }
 
     @Bean
@@ -62,10 +71,16 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     }
 
     @Bean
+    public JacksonSerializationStrategy jacksonSerializationStrategy(){
+        return new JacksonSerializationStrategy();
+    }
+
+
+    @Bean
     public TokenStore tokenStore () {
         RedisTokenStore redisTokenStore = new RedisTokenStore(redisConnectionFactory());
         //序列化
-//        redisTokenStore.setSerializationStrategy();
+        redisTokenStore.setSerializationStrategy(jacksonSerializationStrategy());
         return redisTokenStore;
     }
 
