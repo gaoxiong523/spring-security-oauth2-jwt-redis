@@ -1,6 +1,7 @@
 package com.gaoxiong.controller;
 
 import com.alibaba.fastjson.JSON;
+import com.gaoxiong.pojo.User;
 import com.gaoxiong.util.AuthUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -26,6 +27,8 @@ public class OrderController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         log.info("----"+authentication);
         System.out.println("用户名  : " + JSON.toJSONString(authentication.getPrincipal()));
+        User user = (User) authentication.getPrincipal();
+        System.out.println(user.getUsername());
         System.out.println("封装的传递信息  : " + AuthUtils.getReqUser(req));
         return "(Need Auth Request)product id : " + id;
     }

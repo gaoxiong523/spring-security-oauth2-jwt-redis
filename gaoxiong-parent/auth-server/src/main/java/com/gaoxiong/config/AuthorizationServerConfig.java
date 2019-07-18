@@ -70,17 +70,11 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
         return converter;
     }
 
-    @Bean
-    public JacksonSerializationStrategy jacksonSerializationStrategy(){
-        return new JacksonSerializationStrategy();
-    }
 
 
     @Bean
     public TokenStore tokenStore () {
         RedisTokenStore redisTokenStore = new RedisTokenStore(redisConnectionFactory());
-        //序列化
-        redisTokenStore.setSerializationStrategy(jacksonSerializationStrategy());
         return redisTokenStore;
     }
 

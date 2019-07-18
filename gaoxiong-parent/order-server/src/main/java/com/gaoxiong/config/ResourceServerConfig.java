@@ -69,16 +69,11 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
         lettuceConnectionFactory.afterPropertiesSet();
         return lettuceConnectionFactory;
     }
-    @Bean
-    public JacksonSerializationStrategy jacksonSerializationStrategy(){
-        return new JacksonSerializationStrategy();
-    }
 
     @Bean
     public TokenStore tokenStore () {
         RedisTokenStore redisTokenStore = new RedisTokenStore(redisConnectionFactory());
         //序列化
-        redisTokenStore.setSerializationStrategy(jacksonSerializationStrategy());
         return redisTokenStore;
     }
 

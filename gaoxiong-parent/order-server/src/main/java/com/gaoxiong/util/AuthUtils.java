@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 public class AuthUtils {
     public static String getReqUser(HttpServletRequest req) {
         String header = req.getHeader("Authorization");
-        String token = StringUtils.substringAfter(header, "bearer");
+        String token = StringUtils.substringAfter(header, "bearer ");
         Claims claims;
         try {
             claims = Jwts.parser().setSigningKey("SigningKey".getBytes("UTF-8")).parseClaimsJws(token).getBody();
